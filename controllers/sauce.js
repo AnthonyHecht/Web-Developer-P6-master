@@ -8,13 +8,16 @@ exports.createSauce = (req, res, next) => {
         ...sauceObject,
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
         likes: 0,
-        dislike: 0,
-        usersLike: [],
-        usersDislike: [],
+        dislikes: 0,
+        usersLiked: [' '],
+        usersDisliked: [' '],
     });
     sauce.save()
         .then(() => res.status(201).json({ message: 'Objet enregistré !'}))
-        .catch(error => res.status(400).json({ error }));
+        .catch(error =>{
+            console.log(error)
+            res.status(400).json({ error })
+        });
 };
 
 exports.modifySauce = (req, res, next) => {
@@ -34,11 +37,6 @@ exports.deleteSauce = (req, res, next) => {
       if (!sauce) {
         res.status(404).json({
           error: new Error('No such Sauce !')
-        });
-      }
-      if (sauce.userId !== req.auth.userId) {
-        res.status(400).json({
-          error: new Error('Unauthorized request!')
         });
       }
       Sauce.deleteOne({ _id: req.params.id }).then(
