@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 const dotenv = require('dotenv');
+
+//importation et utilisation rapide des headers cors
 const cors = require('cors');
 dotenv.config();
 

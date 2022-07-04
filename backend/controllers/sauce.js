@@ -1,6 +1,8 @@
 const Sauce = require('../models/Sauce');
+//importation de File System de NodeJS
 const fs = require('fs');
 
+//création de sauce
 exports.createSauce = (req, res, next) => {
     const sauceObject = JSON.parse(req.body.sauce);
     delete sauceObject._id;
@@ -20,12 +22,15 @@ exports.createSauce = (req, res, next) => {
         });
 };
 
+//modification de sauce
 exports.modifySauce = (req, res, next) => {
+    //if nouvelle image -> suppression de l'ancienne dans le dossier image
   if (req.file) {
     Sauce.findOne({ _id: req.params.id })
       .then(sauce => {
         const filename = sauce.imageUrl.split('/images/')[1];
         fs.unlink(`images/${filename}`, () => {
+            //mise à jour de l'image
           const sauceObject = {
             ...JSON.parse(req.body.sauce),
             imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
@@ -39,6 +44,7 @@ exports.modifySauce = (req, res, next) => {
     } 
     else 
     {
+        //si pas de nouvelle image
       const sauceObject = { ...req.body };
       Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
         .then(() => res.status(200).json({ message: 'La sauce a été modifiée.' }))
@@ -46,6 +52,7 @@ exports.modifySauce = (req, res, next) => {
     }
 };
 
+//suppression d'une sauce
 exports.deleteSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id })
     .then(sauce => {
@@ -59,25 +66,28 @@ exports.deleteSauce = (req, res, next) => {
     .catch(error => res.status(500).json({ error }));
 };
 
+//affichage d'une sauce
 exports.getOneSauce = (req, res, next) => {
     Sauce.findOne({ _id: req.params.id })
         .then(sauce => res.status(200).json(sauce))
         .catch(error => res.status(404).json({ error }));
 };
 
+//affichage de toute les sauces
 exports.getAllSauces = (req, res, next) => {
   Sauce.find()
     .then(sauces => res.status(200).json(sauces))
     .catch(error => res.status(400).json({ error}))
 };
 
+//like, dislike
 exports.likeSauce = (req, res, next) => {
   const userId = req.body.userId;
   const like = req.body.like;
   const sauceId = req.params.id;
   Sauce.findOne({ _id: sauceId })
     .then(sauce => {
-      // nouvelles valeurs à modifier
+      // valeurs à modifier
       const newValues = {
         usersLiked: sauce.usersLiked,
         usersDisliked: sauce.usersDisliked,
@@ -86,13 +96,13 @@ exports.likeSauce = (req, res, next) => {
       }
       // Trois cas:
       switch (like) {
-        case 1:  // Sauce liked
+        case 1:  // like sauce
           newValues.usersLiked.push(userId);
           break;
-        case -1:  // Sauce disliked
+        case -1:  // dislike sauce
           newValues.usersDisliked.push(userId);
           break;
-        case 0:  // Annulation du like/dislike
+        case 0:  // Annulation
           if (newValues.usersLiked.includes(userId)) {
             // Annulation du like
             const index = newValues.usersLiked.indexOf(userId);
@@ -104,7 +114,7 @@ exports.likeSauce = (req, res, next) => {
           }
           break;
       };
-      // Calcul du nombre de likes / dislikes
+      // Calcul du nombre de likes, dislikes
       newValues.likes = newValues.usersLiked.length;
       newValues.dislikes = newValues.usersDisliked.length;
       // Mise à jour de la sauce
