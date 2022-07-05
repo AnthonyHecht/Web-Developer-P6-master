@@ -11,13 +11,12 @@ exports.createSauce = (req, res, next) => {
         imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
         likes: 0,
         dislikes: 0,
-        usersLiked: [' '],
-        usersDisliked: [' '],
+        usersLiked: [],
+        usersDisliked: [],
     });
     sauce.save()
         .then(() => res.status(201).json({ message: 'Objet enregistré !'}))
         .catch(error =>{
-            console.log(error)
             res.status(400).json({ error })
         });
 };
@@ -42,9 +41,8 @@ exports.modifySauce = (req, res, next) => {
       })
       .catch(error => res.status(500).json({ error }));
     } 
-    else 
+    else //si pas de nouvelle image
     {
-        //si pas de nouvelle image
       const sauceObject = { ...req.body };
       Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
         .then(() => res.status(200).json({ message: 'La sauce a été modifiée.' }))
@@ -113,6 +111,7 @@ exports.likeSauce = (req, res, next) => {
             newValues.usersDisliked.splice(index, 1);
           }
           break;
+          default: res.status(400).end();
       };
       // Calcul du nombre de likes, dislikes
       newValues.likes = newValues.usersLiked.length;
@@ -120,7 +119,7 @@ exports.likeSauce = (req, res, next) => {
       // Mise à jour de la sauce
       Sauce.updateOne({ _id: sauceId }, newValues )
         .then(() => res.status(200).json({ message: 'La sauce a été notée.' }))
-        .catch(error => res.status(400).json({ error }))  
+        .catch(error => res.status(400).json({ error }))
   })
   .catch(error => res.status(500).json({ error }));
 }
