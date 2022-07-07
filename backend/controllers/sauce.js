@@ -75,7 +75,7 @@ exports.getOneSauce = (req, res, next) => {
 exports.getAllSauces = (req, res, next) => {
   Sauce.find()
     .then(sauces => res.status(200).json(sauces))
-    .catch(error => res.status(400).json({ error}))
+    .catch(error => res.status(400).json({ error }))
 };
 
 //like, dislike
@@ -85,6 +85,9 @@ exports.likeSauce = (req, res, next) => {
   const sauceId = req.params.id;
   Sauce.findOne({ _id: sauceId })
     .then(sauce => {
+        if (sauce.userId === userId) {
+            res.status(401).json({ error });
+        } else {
       // valeurs à modifier
       const newValues = {
         usersLiked: sauce.usersLiked,
@@ -120,6 +123,6 @@ exports.likeSauce = (req, res, next) => {
       Sauce.updateOne({ _id: sauceId }, newValues )
         .then(() => res.status(200).json({ message: 'La sauce a été notée.' }))
         .catch(error => res.status(400).json({ error }))
-  })
+}})
   .catch(error => res.status(500).json({ error }));
-}
+};
