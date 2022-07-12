@@ -10,6 +10,7 @@ dotenv.config();
 const sauceRoutes = require('./routes/sauce')
 const userRoutes = require('./routes/user');
 
+//log mongoDB dans le .env
 mongoose.connect(process.env.MONGOOSE,
     {useNewUrlParser: true,
     useUnifiedTopology: true })
